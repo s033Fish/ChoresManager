@@ -1,0 +1,218 @@
+{% extends "base.html" %}
+
+{% load static %}  <!-- Load the static tag library -->
+
+{% block head %}
+    <link rel="stylesheet" href="{% static 'header.css' %}">
+    <link rel="stylesheet" href="{% static 'draft.css' %}">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js" defer></script>
+{% endblock %}
+    
+{% block content %}
+    <h1>Draft for {{ league.name }}</h1>
+
+    <div>
+        <h2>Current Pick</h2>
+        <p><strong>Current Team:</strong> <span id="current-team">{{ current_team.user.username }}</span></p>
+        <p><strong>Draft Round:</strong> <span id="draft-round">{{ league.draft_round }}</span></p>
+    </div>
+
+    <div>
+        <h2>Available Players</h2>
+        <table class="styled-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Position</th>
+                    <th>Team Picture</th>
+                    <th>Past Points</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody id="players-list">
+                {% for position, players in players_by_position.items %}
+                    {% for player in players %}
+                        <tr id="player-{{ player.id }}">
+                            <td>{{ player.name }}</td>
+                            <td>{{ player.position }}</td>
+                            <td>
+                                <img 
+                                    class="team-logo" 
+                                    src="{% static player.team_picture_url %}"
+                                    alt="{{ player.team }} logo"
+                                    width="50" 
+                                    height="50"
+                                />
+                            </td>
+                            <td>{{ player.past_points }} pts</td>
+                            <td>
+                                <button type="button" class="draft-button" data-player-id="{{ player.id }}">Draft</button>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="5">No {{ position|lower }} available.</td>
+                        </tr>
+                    {% endfor %}
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <h2>Your Drafted Players</h2>
+    <ul id="user-drafted-players" class="drafted-players-list">
+        {% for pick in user_drafted_players %}
+            <li>{{ pick.player.name }} ({{ pick.player.position }})</li>
+        {% endfor %}
+    </ul>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    $(document).ready(function() {
+        console.log("JavaScript is loaded");
+        const csrftoken = '{{ csrf_token }}';
+
+        // Function to poll draft state to determine the current pick and draft round
+        function pollDraftState() {
+            console.log('Polling draft state...');
+            $.ajax({
+                url: '/get_draft_state/',
+                type: 'GET',
+                data: { 'league_id': {{ league.id }} },
+                success: function(response) {
+                    console.log('Draft state response:', response);
+
+                    // Update UI elements with draft state
+                    $('#pick-number').text(response.current_pick);
+                    $('#draft-round').text(response.draft_round);
+
+                    if (response.current_turn_user_id === {{ request.user.id }}) {
+                        $('#current-team').text('It is your turn!');
+                        $('.draft-button').removeAttr('disabled')
+                                          .removeClass('disabled-draft-button')
+                                          .addClass('active-draft-button');
+                    } else {
+                        $('#current-team').text(response.current_turn_user_name);
+                        $('.draft-button').attr('disabled', true)
+                                          .removeClass('active-draft-button')
+                                          .addClass('disabled-draft-button');
+                    }
+
+                    if (response.redirect) {
+                        window.location.href = '/league/{{ league.id }}/';
+                    }
+                },
+                error: function() {
+                    console.error('Failed to get draft state. Retrying...');
+                }
+            });
+        }
+
+        // Function to refresh available players list from the server
+        function refreshAvailablePlayers() {
+            console.log('Refreshing available players...');
+            $.ajax({
+                url: '/get_available_players/',
+                type: 'GET',
+                data: { 'league_id': {{ league.id }} },
+                success: function(response) {
+                    console.log('Available players response:', response);
+                    $('#players-list').empty(); // Clear existing players list
+
+                    // Iterate over each position and its players
+                    response.players_by_position.forEach(function(position) {
+                        position.players.forEach(function(player) {
+                            $('#players-list').append(
+                                '<tr id="player-' + player.id + '">' +
+                                '<td>' + player.name + '</td>' +
+                                '<td>' + player.position + '</td>' +
+                                '<td><img class="team-logo" src="' + player.team_picture_url + '" alt="' + player.team + ' logo" width="50" height="50" /></td>' +
+                                '<td>' + player.past_points + ' pts</td>' +
+                                '<td><button type="button" class="draft-button" data-player-id="' + player.id + '">Draft</button></td>' +
+                                '</tr>'
+                            );
+                        });
+                    });
+
+                    // Update draft button states based on whether it's the user's turn
+                    if ($('#current-team').text() === 'It is your turn!') {
+                        $('.draft-button').removeAttr('disabled')
+                                          .removeClass('disabled-draft-button')
+                                          .addClass('active-draft-button');
+                    } else {
+                        $('.draft-button').attr('disabled', true)
+                                          .removeClass('active-draft-button')
+                                          .addClass('disabled-draft-button');
+                    }
+                },
+                error: function() {
+                    console.error('Failed to refresh available players.');
+                }
+            });
+        }
+
+        // Function to refresh user's drafted players list
+        function refreshUserDraftedPlayers() {
+            console.log('Refreshing user drafted players...');
+            $.ajax({
+                url: '/get_user_drafted_players/',
+                type: 'GET',
+                data: { 'league_id': {{ league.id }} },
+                success: function(response) {
+                    $('#user-drafted-players').empty(); // Clear existing drafted players list
+                    response.drafted_players.forEach(function(pick) {
+                        $('#user-drafted-players').append('<li>' + pick.player_name + ' (' + pick.position + ')</li>');
+                    });
+                },
+                error: function() {
+                    console.error('Failed to refresh drafted players list.');
+                }
+            });
+        }
+
+        // Function to select a player when it is the user's turn
+        function selectPlayer(playerId) {
+            console.log('Attempting to draft player with ID:', playerId);
+            $.ajax({
+                url: '/select_player/',
+                type: 'POST',
+                headers: { 'X-CSRFToken': csrftoken },
+                data: {
+                    'player_id': playerId,
+                    'league_id': {{ league.id }},
+                },
+                success: function(response) {
+                    console.log('Draft response:', response);
+                    if (response.success) {
+                        // Immediately refresh available players and drafted players list
+                        refreshAvailablePlayers();
+                        refreshUserDraftedPlayers();
+                    } else {
+                        alert(response.error_message);
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('Failed to draft player:', error);
+                    alert('Failed to draft player. Please try again.');
+                }
+            });
+        }
+
+        // Attach click event to the draft button
+        $(document).on('click', '.draft-button', function() {
+            const playerId = $(this).data('player-id');
+            console.log('Draft button clicked for player ID:', playerId);
+            selectPlayer(playerId);
+        });
+
+        // Start polling for draft state and updating UI when the page is ready
+        console.log('Document is ready. Starting to poll draft state...');
+        setInterval(function() {
+            pollDraftState();
+            refreshAvailablePlayers();
+            refreshUserDraftedPlayers();
+        }, 3000); // Poll every 3 seconds
+    });
+</script>
+{% endblock %}
