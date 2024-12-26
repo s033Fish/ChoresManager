@@ -30,7 +30,7 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['3.133.135.4']
+ALLOWED_HOSTS = ['3.133.135.4', '127.0.0.1', "phideltchores.com", "www.phideltchores.com"]
 
 
 # Application definition
