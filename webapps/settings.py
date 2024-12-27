@@ -32,6 +32,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['3.133.135.4', '127.0.0.1', "phideltchores.com", "www.phideltchores.com"]
 
+CSRF_TRUSTED_ORIGINS = ['https://phideltchores.com', 'https://www.phideltchores.com']
 
 # Application definition
 
