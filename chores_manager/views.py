@@ -3,6 +3,9 @@ from django.contrib.auth.decorators import login_required
 from datetime import date, timedelta
 from .models import Chore, UserChoreSummary
 from allauth.socialaccount.models import SocialAccount
+from django.http import JsonResponse, HttpResponse
+import json
+import os
 
 def login(request):
     return render(request, 'login.html')
@@ -41,3 +44,25 @@ def home(request):
     }
 
     return render(request, 'home.html', context)
+
+VERIFY_TOKEN = os.getenv("FACEBOOK_VERIFY_TOKEN")
+
+VERIFY_TOKEN
+
+def facebook_webhook(request):
+    if request.method == "GET":
+        mode = request.GET.get("hub.mode")
+        token = request.GET.get("hub.verify_token")
+        challenge = request.GET.get("hub.challenge")
+
+        if mode == "subscribe" and token == VERIFY_TOKEN:
+            return HttpResponse(challenge, status=200)
+        return HttpResponse("Forbidden", status=403)
+
+    elif request.method == "POST":
+        payload = json.loads(request.body)
+        # Handle incoming events here
+        print("Incoming Webhook Event:", payload)
+        return JsonResponse({"status": "EVENT_RECEIVED"}, status=200)
+
+    return HttpResponse("Method Not Allowed", status=405)
