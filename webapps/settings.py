@@ -151,7 +151,7 @@ LOGIN_REDIRECT_URL = '/'  # Redirect after successful login
 SOCIALACCOUNT_PROVIDERS = {
     'facebook': {
         'METHOD': 'oauth2',
-        'SCOPE': ['email'],
+        'SCOPE': ['email', 'public_profile', 'pages_messaging'],
         'AUTH_PARAMS': {'auth_type': 'reauthenticate'},
         'FIELDS': [
             'id',
