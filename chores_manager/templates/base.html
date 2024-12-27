@@ -3,17 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}My Site{% endblock %}</title>
+    <title>{% block title %}Chores Manager{% endblock %}</title>
+    <!-- Add Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        header {
+            text-align: center;
+            margin-top: 50px;
+        }
+        footer {
+            text-align: center;
+            margin-top: 20px;
+            color: #6c757d;
+        }
+    </style>
 </head>
 <body>
     <header>
-        <h1>Welcome to Chores Manager</h1>
+        <h1>Chores Manager</h1>
     </header>
-    <main>
+    <main class="container mt-5">
         {% block content %}{% endblock %}
     </main>
-    <footer>
-        <p>&copy; 2024 My Site</p>
+    <footer class="mt-auto py-3">
+        <p>&copy; 2024 Chores Manager</p>
     </footer>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

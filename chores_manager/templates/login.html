@@ -1,11 +1,18 @@
 {% extends 'base.html' %}
-{% block title %}Sign in {% endblock %}
-{% block content %} 
-    <div class="row">
-        <div class="col-md-8 mx-auto social-container my-2 order-md-1">
-            <button class="btn btn-primary mb-2">
-                <a href="{% url 'social:begin' 'facebook' %}">Login With Facebook</a>
-            </button>
+{% block title %}Login{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card shadow">
+            <div class="card-body">
+                <h3 class="card-title text-center mb-4">Sign In</h3>
+                <div class="d-grid gap-2">
+                    <a href="{% url 'social:begin' 'facebook' %}" class="btn btn-primary btn-lg">
+                        Login with Facebook
+                    </a>
+                </div>
+            </div>
         </div>
     </div>
+</div>
 {% endblock %}

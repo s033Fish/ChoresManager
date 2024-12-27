@@ -1,9 +1,67 @@
-{% extends 'base.html' %} 
-    {% block title %} Home {% endblock %} 
-    {% block content %} 
-        <div class="row">
-            <div class="col-sm-12 mb-3">
-                <h4 class="text-center">Welcome {{ user.username }}</h4>
+{% extends 'base.html' %}
+
+{% block title %}Home{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1>Welcome, {{ user.username }}!</h1>
+
+    <!-- Profile Section -->
+    <div class="card my-4">
+        <div class="card-body">
+            <h3 class="card-title">Profile Information</h3>
+            {% if facebook_data %}
+            <div class="d-flex align-items-center">
+                <img src="{{ facebook_data.picture.data.url }}" alt="Profile Picture" class="rounded-circle me-3" width="80" height="80">
+                <div>
+                    <p><strong>Name:</strong> {{ facebook_data.name }}</p>
+                    <p><strong>Email:</strong> {{ facebook_data.email }}</p>
+                    <p><strong>Facebook ID:</strong> {{ facebook_data.id }}</p>
+                </div>
             </div>
+            {% else %}
+            <p class="text-muted">No Facebook profile data available.</p>
+            {% endif %}
         </div>
-    {% endblock %}
+    </div>
+
+    <!-- Weekly Selection Status -->
+    <div class="mt-4">
+        {% if selected_this_week %}
+        <div class="alert alert-success" role="alert">
+            You have been selected for chores this week!
+        </div>
+        {% else %}
+        <div class="alert alert-info" role="alert">
+            You were not selected for chores this week.
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Completed Chores -->
+    <h2 class="mt-5">Completed Chores</h2>
+    {% if completed_chores %}
+    <table class="table table-striped mt-3">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Day</th>
+                <th>Meal</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for chore in completed_chores %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ chore.day_of_week }}</td>
+                <td>{{ chore.meal_time }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p class="text-muted">You have not completed any chores yet.</p>
+    {% endif %}
+</div>
+{% endblock %}
+ 

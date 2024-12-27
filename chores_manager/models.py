@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 
+
 class Chore(models.Model):
     WEEKDAY_CHOICES = [
         ('Monday', 'Monday'),
@@ -20,9 +21,10 @@ class Chore(models.Model):
     completed = models.BooleanField(default=False)
 
     def __str__(self):
-        return f"{self.chore.name} on {self.day_of_week} ({self.meal_time})"
+        return f"{self.day_of_week} - {self.meal_time}"
 
-class User(models.Model):
+
+class UserChoreSummary(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='chore_summary')
     completed_chore_events = models.ManyToManyField(Chore, related_name='completed_by_users', blank=True)
 
