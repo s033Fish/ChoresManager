@@ -47,13 +47,16 @@ def home(request):
 
 VERIFY_TOKEN = os.getenv("FACEBOOK_VERIFY_TOKEN")
 
-VERIFY_TOKEN
-
 def facebook_webhook(request):
+    print(f"VERIFY_TOKEN: {VERIFY_TOKEN}")
+
     if request.method == "GET":
         mode = request.GET.get("hub.mode")
         token = request.GET.get("hub.verify_token")
         challenge = request.GET.get("hub.challenge")
+
+        print(f"Received GET Request: mode={mode}, token={token}, challenge={challenge}")
+
 
         if mode == "subscribe" and token == VERIFY_TOKEN:
             return HttpResponse(challenge, status=200)
