@@ -20,7 +20,14 @@ def privacy(request):
 def home(request):
     user = request.user
 
+    print(request.user)
+    print(request.user.first_name)
+    print(request.user.last_name)
+    print(request.user.email)
+    print(request.user.is_authenticated)
     social_account = SocialAccount.objects.filter(user=user, provider='facebook').first()
+    print(SocialAccount.objects.all())
+    print(social_account)
     facebook_data = social_account.extra_data if social_account else {}
 
     # Check if the user was selected for this week

@@ -10,18 +10,13 @@
     <div class="card my-4">
         <div class="card-body">
             <h3 class="card-title">Profile Information</h3>
-            {% if facebook_data %}
             <div class="d-flex align-items-center">
-                <img src="{{ facebook_data.picture.data.url }}" alt="Profile Picture" class="rounded-circle me-3" width="80" height="80">
+                <!--<img src="{{ facebook_data.picture.data.url }}" alt="Profile Picture" class="rounded-circle me-3" width="80" height="80">-->
                 <div>
-                    <p><strong>Name:</strong> {{ facebook_data.name }}</p>
-                    <p><strong>Email:</strong> {{ facebook_data.email }}</p>
-                    <p><strong>Facebook ID:</strong> {{ facebook_data.id }}</p>
+                    <p><strong>Name:</strong> {{ user.first_name }} {{ user.last_name }}</p>
+                    <p><strong>Email:</strong> {{ user.email }}</p>
                 </div>
             </div>
-            {% else %}
-            <p class="text-muted">No Facebook profile data available.</p>
-            {% endif %}
         </div>
     </div>
 

@@ -141,7 +141,6 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
     'allauth.account.auth_backends.AuthenticationBackend',
-    'social_core.backends.facebook.FacebookOAuth2',
 ]
 
 SITE_ID = 1  # Required by django-allauth
@@ -151,7 +150,7 @@ LOGIN_REDIRECT_URL = '/'  # Redirect after successful login
 SOCIALACCOUNT_PROVIDERS = {
     'facebook': {
         'METHOD': 'oauth2',
-        'SCOPE': ['email', 'public_profile', 'pages_messaging'],
+        'SCOPE': ['email', 'public_profile'],
         'AUTH_PARAMS': {'auth_type': 'reauthenticate'},
         'FIELDS': [
             'id',
@@ -159,7 +158,6 @@ SOCIALACCOUNT_PROVIDERS = {
             'name',
             'first_name',
             'last_name',
-            'picture',
         ],
         'EXCHANGE_TOKEN': True,
         'VERIFIED_EMAIL': False,
