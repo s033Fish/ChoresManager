@@ -1,9 +1,13 @@
-from allauth.socialaccount.signals import social_account_added
+from django.db.models.signals import post_save
 from django.dispatch import receiver
+from django.contrib.auth.models import User
+from .models import Profile
 
-@receiver(social_account_added)
-def social_account_added_handler(request, sociallogin, **kwargs):
-    print("New social account linked:")
-    print(f"User: {sociallogin.user}")
-    print(f"Provider: {sociallogin.account.provider}")
-    print(f"Extra Data: {sociallogin.account.extra_data}")
+@receiver(post_save, sender=User)
+def create_user_profile(sender, instance, created, **kwargs):
+    if created:
+        Profile.objects.create(user=instance)
+
+@receiver(post_save, sender=User)
+def save_user_profile(sender, instance, **kwargs):
+    instance.profile.save()

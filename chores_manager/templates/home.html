@@ -4,18 +4,17 @@
 
 {% block content %}
 <div class="container mt-4">
-    <h1>Welcome, {{ user.username }}!</h1>
+    <h1>Welcome, {{ request.user.first_name }}!</h1>
 
     <!-- Profile Section -->
     <div class="card my-4">
         <div class="card-body">
             <h3 class="card-title">Profile Information</h3>
-            <div class="d-flex align-items-center">
-                <!--<img src="{{ facebook_data.picture.data.url }}" alt="Profile Picture" class="rounded-circle me-3" width="80" height="80">-->
-                <div>
-                    <p><strong>Name:</strong> {{ facebook_data.first_name }} {{ facebook_data.last_name }}</p>
-                    <p><strong>Email:</strong> {{ facebook_data.email }}</p>
-                </div>
+            <div>
+                <p><strong>Name:</strong> {{ request.user.first_name }} {{ request.user.last_name }}</p>
+                <p><strong>Email:</strong> {{ request.user.email }}</p>
+                <p><strong>Phone Number:</strong> {{ request.user.profile.phone_number }}</p>
+                <p><strong>SMS Opt-In:</strong> {{ request.user.profile.opt_in_sms|yesno:"Yes,No" }}</p>
             </div>
         </div>
     </div>
