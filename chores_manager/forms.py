@@ -12,7 +12,11 @@ class CustomUserCreationForm(forms.ModelForm):
 
     class Meta:
         model = User
-        fields = ['username', 'email']
+        fields = ['username', 'email', 'first_name', 'last_name', 'phone_number', 'opt_in_sms']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['username'].help_text = "You may use letters, digits, and @/./+/-/_ characters."
 
     def clean_password2(self):
         password1 = self.cleaned_data.get('password1')
