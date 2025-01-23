@@ -29,6 +29,9 @@ def datadeletion(request):
 def privacy(request):
     return render(request, 'privacy.html')
 
+def terms(request):
+    return render(request, 'terms.html')
+
 def logout_view(request):
     logout(request)  # Logs the user out and clears the session
     messages.success(request, "You have been logged out successfully.")
@@ -37,30 +40,32 @@ def logout_view(request):
 @login_required
 def home(request):
     user = request.user
-
     print(request.user)
-    print(request.user.first_name)
-    print(request.user.last_name)
-    print(request.user.email)
-    print(request.user.is_authenticated)
 
-    # Check if the user was selected for this week
+    # Determine the start and end of the current week
     today = date.today()
     start_of_week = today - timedelta(days=today.weekday())  # Monday of this week
     end_of_week = start_of_week + timedelta(days=6)  # Sunday of this week
 
-    selected_chores = Chore.objects.filter(
-        day_of_week__in=[start_of_week.strftime('%A'), end_of_week.strftime('%A')],
+    # Check if the user has been assigned any chores this week
+    assigned_chores = Chore.objects.filter(
+        date__range=(start_of_week, end_of_week),
+        completed=False,
+        user_summary__user=user
     )
-    selected_this_week = selected_chores.exists()
+    print("assigned chores: ", assigned_chores)
 
-    # Fetch the user's completed chores
-    user_summary = UserChoreSummary.objects.filter(user=user).first()
-    completed_chores = user_summary.completed_chore_events.all() if user_summary else []
+    # Check if the user has completed any chores ever
+    completed_chores = Chore.objects.filter(
+        completed=True,
+        user_summary__user=user
+    )
+    print("completed chores: ", completed_chores)
 
+    # Prepare the context for the template
     context = {
-        'selected_this_week': selected_this_week,
-        'completed_chores': completed_chores,
+        'assigned_chores': assigned_chores,  # Chores assigned for this week
+        'completed_chores': completed_chores,  # Chores completed ever
     }
 
     return render(request, 'home.html', context)

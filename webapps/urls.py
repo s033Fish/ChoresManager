@@ -10,4 +10,5 @@ urlpatterns = [
     path("signup/", views.signup_view, name='signup'),
     path("privacy/", views.privacy, name="privacy"),
     path("data-deletion/", views.datadeletion, name="data-deletion"),
+    path("terms/", views.terms, name="terms"),
 ]

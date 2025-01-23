@@ -5,18 +5,24 @@ class CustomUserCreationForm(forms.ModelForm):
     phone_number = forms.CharField(max_length=15, required=True, label="Phone Number")
     first_name = forms.CharField(max_length=30, required=True, label="First Name")
     last_name = forms.CharField(max_length=30, required=True, label="Last Name")
-    opt_in_sms = forms.BooleanField(required=False, label="I agree to receive SMS messages")
+    opt_in_sms = forms.BooleanField(required=False, label="Receive SMS messages",
+        help_text="<br>I agree to the <a href='/terms/' target='_blank'>Terms of Service</a>, "
+                "<a href='/privacy/' target='_blank'>Privacy Policy</a> "
+                "and <a href='/data-deletion/' target='_blank'>Data Deletion Policy</a>, "
+                "including receiving SMS messages about weekly chores from Phi Delt Chores Manager. "
+                "Message frequency may vary. Message and data rates may apply. "
+                "Reply HELP for help and STOP to opt-out.")
 
     password1 = forms.CharField(label='Password', widget=forms.PasswordInput)
     password2 = forms.CharField(label='Confirm Password', widget=forms.PasswordInput)
 
     class Meta:
         model = User
-        fields = ['username', 'email', 'first_name', 'last_name', 'phone_number', 'opt_in_sms']
+        fields = ['first_name', 'last_name', 'username', 'email', 'phone_number', 'opt_in_sms']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['username'].help_text = "You may use letters, digits, and @/./+/-/_ characters."
+        self.fields['username'].help_text = "<br>You may use letters, digits, and @/./+/-/_ characters."
 
     def clean_password2(self):
         password1 = self.cleaned_data.get('password1')
