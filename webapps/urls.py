@@ -11,4 +11,6 @@ urlpatterns = [
     path("privacy/", views.privacy, name="privacy"),
     path("data-deletion/", views.datadeletion, name="data-deletion"),
     path("terms/", views.terms, name="terms"),
+    path('sms/reply/', views.sms_reply_webhook, name='sms_reply_webhook'),
+
 ]
