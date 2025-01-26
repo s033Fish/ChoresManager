@@ -19,6 +19,72 @@
         </div>
     </div>
 
+
+    {% if request.user.is_staff %}
+    <div class="card my-4">
+        <div class="card-body">
+            <h3 class="card-title">Admin Actions</h3>
+            <div id="adminActionsFeedback" class="alert d-none" role="alert"></div>
+            <button id="addChoresBtn" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addChoresModal">Add Chores</button>
+
+            <button id="assignChoresBtn" class="btn btn-primary" onclick="executeAction('assign-chores', 'assignChoresBtn')">Assign Chores</button>
+            <button id="sendSMSBtn" class="btn btn-primary" onclick="executeAction('send-sms', 'sendSMSBtn')">Send SMS</button>
+        </div>
+    </div>
+
+<!-- Add Chores Modal -->
+<!-- Add Chores Modal -->
+<div class="modal fade" id="addChoresModal" tabindex="-1" aria-labelledby="addChoresModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addChoresModalLabel">Add Chores</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addChoresForm">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="choreDate" class="form-label">Date</label>
+                        <input
+                            type="date"
+                            class="form-control"
+                            id="choreDate"
+                            name="date"
+                            required
+                            onchange="updateDayOfWeek()" 
+                        >
+                    </div>
+                    <div class="mb-3">
+                        <label for="dayOfWeek" class="form-label">Day of Week</label>
+                        <input
+                            type="text"
+                            class="form-control"
+                            id="dayOfWeek"
+                            name="day_of_week"
+                            readonly
+                            required
+                        >
+                    </div>
+                    <div class="mb-3">
+                        <label for="mealTime" class="form-label">Meal Time</label>
+                        <select class="form-select" id="mealTime" name="meal_time" required>
+                            <option value="Breakfast">Breakfast</option>
+                            <option value="Lunch">Lunch</option>
+                            <option value="Dinner">Dinner</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+{% endif %}
+
     <!-- Weekly Selection Status -->
     <h2>Assigned Chores This Week</h2>
     {% if assigned_chores %}
@@ -45,4 +111,4 @@
 
 </div>
 {% endblock %}
- 
+

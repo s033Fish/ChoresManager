@@ -10,7 +10,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib import messages
-
+from django.contrib.auth.decorators import user_passes_test
 from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponse
 
@@ -80,10 +80,14 @@ def home(request):
     )
     print("completed chores: ", completed_chores)
 
+    # Check if the user is staff
+    is_staff = user.is_staff
+
     # Prepare the context for the template
     context = {
         'assigned_chores': assigned_chores,  # Chores assigned for this week
         'completed_chores': completed_chores,  # Chores completed ever
+        'is_staff': is_staff,  # Whether the user is staff
     }
 
     return render(request, 'home.html', context)

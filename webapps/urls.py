@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.urls import path, include
 from django.contrib.auth import views as auth_views
-from chores_manager import views
+from chores_manager import views, admin_views
 
 urlpatterns = [
     path("login/", views.login_view, name="login"),
@@ -12,5 +12,8 @@ urlpatterns = [
     path("data-deletion/", views.datadeletion, name="data-deletion"),
     path("terms/", views.terms, name="terms"),
     path('sms/reply/', views.sms_reply_webhook, name='sms_reply_webhook'),
+    path('admin-actions/add-chores/', admin_views.add_chores, name='add_chores'),
+    path('admin-actions/assign-chores/', admin_views.assign_chores, name='assign_chores'),
+    path('admin-actions/send-sms/', admin_views.send_sms, name='send_sms'),
 
 ]
