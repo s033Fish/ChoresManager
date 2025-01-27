@@ -144,6 +144,7 @@ def process_message(from_number, message_body):
     assigned to the user and incomplete.
     """
     try:
+        print("inbound number", from_number)
         # Find the user's profile based on their phone number
         profile = Profile.objects.get(phone_number=from_number)
         user = profile.user

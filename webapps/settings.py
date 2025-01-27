@@ -11,7 +11,7 @@ TWILIO_AUTH_TOKEN = os.getenv('AUTH_TOKEN')
 
 DEBUG = True
 
-ALLOWED_HOSTS = ["127.0.0.1", "phideltchores.com", "www.phideltchores.com"]
+ALLOWED_HOSTS = ["127.0.0.1", "3.133.135.4", "phideltchores.com", "www.phideltchores.com"]
 CSRF_TRUSTED_ORIGINS = ['https://phideltchores.com', 'https://www.phideltchores.com']
 
 # Application definition
