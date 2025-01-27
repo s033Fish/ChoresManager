@@ -144,9 +144,10 @@ def process_message(from_number, message_body):
     assigned to the user and incomplete.
     """
     try:
-        print("inbound number", from_number)
+        stripped_from_number = from_number.lstrip('+1')
+
         # Find the user's profile based on their phone number
-        profile = Profile.objects.get(phone_number=from_number)
+        profile = Profile.objects.get(phone_number=stripped_from_number)
         user = profile.user
 
         # Fetch the most recent past chore assigned to the user and incomplete
