@@ -6,6 +6,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(BASE_DIR / ".env")
 
 SECRET_KEY = os.getenv('SECRET_KEY')
+TWILIO_ACCOUNT_SID = os.getenv('ACCOUNT_SID')
+TWILIO_AUTH_TOKEN = os.getenv('AUTH_TOKEN')
 
 DEBUG = True
 

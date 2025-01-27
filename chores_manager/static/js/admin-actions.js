@@ -52,35 +52,37 @@ function executeAction(action, buttonId) {
             'Content-Type': 'application/json'
         }
     })
-    .then(response => {
-        if (response.ok) {
-            console.log(`${action} action completed successfully!`);
+    .then(response => response.json()) // Parse JSON response
+    .then(data => {
+         console.log('Response data:', data);
+        if (data.message) {
+            feedback.classList.remove('d-none', 'alert-danger');
+            feedback.classList.add('alert-success');
+            feedback.innerText = data.message;
+
             button.classList.remove('btn-primary');
             button.classList.add('btn-success');
             button.innerText = 'Completed';
-
-            feedback.classList.remove('d-none', 'alert-danger');
-            feedback.classList.add('alert-success');
-            feedback.innerText = `${action.replace('-', ' ').toUpperCase()} action completed successfully!`;
-        } else {
-            button.disabled = false;
-            button.innerText = 'Retry';
-
+        } else if (data.error) {
             feedback.classList.remove('d-none', 'alert-success');
             feedback.classList.add('alert-danger');
-            feedback.innerText = `Failed to complete ${action.replace('-', ' ').toUpperCase()} action. Please try again.`;
+            feedback.innerText = data.error;
+
+            button.disabled = false;
+            button.innerText = 'Retry';
         }
     })
     .catch(error => {
-        console.error('Error executing action:', error);
-        button.disabled = false;
-        button.innerText = 'Retry';
-
+        console.error('Error:', error);
         feedback.classList.remove('d-none', 'alert-success');
         feedback.classList.add('alert-danger');
-        feedback.innerText = `An error occurred while processing ${action.replace('-', ' ').toUpperCase()} action.`;
+        feedback.innerText = 'An error occurred. Please try again.';
+
+        button.disabled = false;
+        button.innerText = 'Retry';
     });
 }
+
 
 // Function to update the day of the week based on the selected date
 window.updateDayOfWeek = function () {

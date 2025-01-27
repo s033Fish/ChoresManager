@@ -1,0 +1,120 @@
+{% extends 'base.html' %}
+
+{% block title %}Admin{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1>Admin Panel</h1>
+
+    {% if request.user.is_staff %}
+<div class="card my-4">
+    <div class="card-body">
+        <h3 class="card-title">Admin Actions</h3>
+        <!-- Feedback Section -->
+        <div id="adminActionsFeedback" class="alert d-none" role="alert"></div>
+
+        <!-- Admin Action Buttons -->
+        <button id="addChoresBtn" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addChoresModal">Add Chores</button>
+        <button id="assignChoresBtn" class="btn btn-primary" onclick="executeAction('assign-chores', 'assignChoresBtn')">Assign Chores</button>
+        <button id="sendSMSBtn" class="btn btn-primary" onclick="executeAction('send-sms', 'sendSMSBtn')">Send SMS</button>
+    </div>
+</div>
+
+<!-- Weekly Chores Table -->
+    <div class="card my-4">
+        <div class="card-body">
+            <h3 class="card-title">Chores for This Week</h3>
+            <table class="table table-bordered table-striped">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Day of Week</th>
+                        <th>Meal Time</th>
+                        <th>Assigned User</th>
+                        <th>Completed</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for chore in chores %}
+                        <tr>
+                            <td>{{ chore.date }}</td>
+                            <td>{{ chore.day_of_week }}</td>
+                            <td>{{ chore.meal_time }}</td>
+                            <td>
+                                {% if chore.user %}
+                                    {{ chore.user.first_name }} {{ chore.user.last_name }}
+                                {% else %}
+                                    Unassigned
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if chore.completed %}
+                                    Yes
+                                {% else %}
+                                    No
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+
+<!-- Add Chores Modal -->
+<div class="modal fade" id="addChoresModal" tabindex="-1" aria-labelledby="addChoresModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addChoresModalLabel">Add Chores</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addChoresForm">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="choreDate" class="form-label">Date</label>
+                        <input
+                            type="date"
+                            class="form-control"
+                            id="choreDate"
+                            name="date"
+                            required
+                            onchange="updateDayOfWeek()" 
+                        >
+                    </div>
+                    <div class="mb-3">
+                        <label for="dayOfWeek" class="form-label">Day of Week</label>
+                        <input
+                            type="text"
+                            class="form-control"
+                            id="dayOfWeek"
+                            name="day_of_week"
+                            readonly
+                            required
+                        >
+                    </div>
+                    <div class="mb-3">
+                        <label for="mealTime" class="form-label">Meal Time</label>
+                        <select class="form-select" id="mealTime" name="meal_time" required>
+                            <option value="Breakfast">Breakfast</option>
+                            <option value="Lunch">Lunch</option>
+                            <option value="Dinner">Dinner</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+{% endif %}
+
+
+</div>
+{% endblock %}
+

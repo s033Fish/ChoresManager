@@ -1,18 +1,32 @@
+# Standard library imports
 import os
 import json 
 import sqlite3
 import random
 from datetime import date, timedelta
 
+# Django imports
 from datetime import date, timedelta
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.conf import settings
 from django.contrib.auth.decorators import user_passes_test
 from django.contrib.admin.views.decorators import staff_member_required
+from django.contrib.auth.decorators import login_required
 from django.db.models import Count, Q
+from django.shortcuts import render, redirect
 
-from .models import Chore
+# Twilio imports
+from twilio.rest import Client
+
+# Local app imports
+from .models import Chore, Profile
+
+# Twilio credentials (ensure these are set in your environment or settings)
+from django.conf import settings
+TWILIO_ACCOUNT_SID = settings.TWILIO_ACCOUNT_SID
+TWILIO_AUTH_TOKEN = settings.TWILIO_AUTH_TOKEN
+TWILIO_PHONE_NUMBER = "+18788797709"
 
 
 
@@ -24,14 +38,110 @@ def staff_required(view_func):
     return user_passes_test(lambda u: u.is_staff)(view_func)
 
 
-@csrf_exempt
-@staff_required
-def send_sms(request):
-    if request.method == 'POST':
-        # Logic to send SMS
-        return JsonResponse({'message': 'SMS sent successfully.'}, status=200)
-    return JsonResponse({'error': 'Invalid request method.'}, status=405)
+@login_required
+@staff_member_required
+def admin_panel(request):
+    user = request.user
 
+    # Determine the start and end of the current week
+    today = date.today()
+    start_of_week = today - timedelta(days=today.weekday())  # Monday of this week
+    end_of_week = start_of_week + timedelta(days=6)  # Sunday of this week
+
+    # Fetch chores for the current week
+    chores = Chore.objects.filter(date__range=(start_of_week, end_of_week)).select_related('user').order_by('date', 'meal_time')
+
+    # Check if the user is staff
+    is_staff = user.is_staff
+
+    # Prepare the context for the template
+    context = {
+        'is_staff': is_staff,  # Whether the user is staff
+        'chores': chores,  # Chores for the week
+    }
+
+    return render(request, 'admin.html', context)
+
+def send_sms(phone_number, message):
+    """
+    Send an SMS message using Twilio.
+    """
+    client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
+
+    try:
+        message = client.messages.create(
+            body=message,               # Message content
+            from_=TWILIO_PHONE_NUMBER,  # Your Twilio number
+            to=phone_number             # Recipient's phone number
+        )
+        print(f"Message SID: {message.sid}")
+    except Exception as e:
+        print(f"Error sending SMS message: {e}")
+
+@csrf_exempt
+@staff_member_required
+def send_sms_reminders(request):
+    """
+    Form message by retreiving uncompleted chores.
+    """
+    if request.method == 'POST':
+        try:
+            # Determine the current week's date range
+            today = date.today()
+            start_of_week = today - timedelta(days=today.weekday())
+            end_of_week = start_of_week + timedelta(days=6)
+
+            # Query for uncompleted chores grouped by user
+            chores = (
+                Chore.objects.filter(
+                    completed=False,
+                    date__range=(start_of_week, end_of_week),
+                    user__isnull=False,
+                )
+                .select_related("user__profile")
+                .order_by("user__id", "date", "day_of_week", "meal_time")
+            )
+
+            # Group chores by user
+            user_chores = {}
+            for chore in chores:
+                user = chore.user
+                profile = user.profile
+                if profile.phone_number:  # Only include users with phone numbers
+                    user_key = (user.id, user.first_name, user.last_name, profile.phone_number)
+                    if user_key not in user_chores:
+                        user_chores[user_key] = []
+                    user_chores[user_key].append((chore.day_of_week, chore.meal_time, chore.date))
+
+            if not user_chores:
+                return JsonResponse({'message': 'No uncompleted chores found for this week.'}, status=404)
+
+            # Send SMS reminders
+            sms_count = 0
+            for (user_id, first_name, last_name, phone_number), chores in user_chores.items():
+                # Build the list of chores
+                chore_list = "\n".join(
+                    [f"- {day_of_week} ({chore_date}) - {meal_time}" for day_of_week, meal_time, chore_date in chores]
+                )
+
+                # Compose the SMS message
+                message = (
+                    f"Hi {first_name}, here are your pending chores for this week:\n"
+                    f"{chore_list}\n"
+                    "Please complete them as soon as possible. Thank you!"
+                )
+                print("message: ", message)
+
+                send_sms(phone_number, message)
+                print(f"Sent reminder to {first_name} {last_name} at {phone_number}.")
+                sms_count += 1
+
+            return JsonResponse({'message': f'{sms_count} reminders have been sent successfully.'}, status=200)
+
+        except Exception as e:
+            return JsonResponse({'error': f'Error sending SMS reminders: {str(e)}'}, status=500)
+
+    return JsonResponse({'error': 'Invalid request method.'}, status=405)
 
 def get_week_dates(requested_date=None):
     if requested_date:
@@ -126,8 +236,17 @@ def assign_chores(request):
 
             print("Unassigned chores count:", unassigned_chores.count())
 
-            if not unassigned_chores.exists():
-                return JsonResponse({'message': 'No unassigned chores found for the selected week.'}, status=404)
+            #if not unassigned_chores.exists():
+            #    return JsonResponse({'message': 'No unassigned chores found for the selected week.'}, status=404)
+
+            if unassigned_chores.count() == 0:
+                # No chores to assign, return a success response
+                return JsonResponse({
+                    'message': 'No unassigned chores found for the selected week.',
+                    'assigned_chore_count': 0,
+                    'unassigned_chore_count': 0,
+                    'eligible_user_count': 0
+                }, status=200)
 
             # Fetch all users excluding those who have completed more than X chores
             from django.contrib.auth import get_user_model
@@ -153,7 +272,7 @@ def assign_chores(request):
                 assigned_chore_count += 1
 
             return JsonResponse({
-                'message': f'All unassigned chores have been successfully assigned. {assigned_chore_count} chores were assigned to {len(users)} users.'
+                'message': f'All unassigned chores have been successfully assigned. {assigned_chore_count} chores were assigned to {len(users)} eligible users.'
             }, status=200)
 
         except Exception as e:
