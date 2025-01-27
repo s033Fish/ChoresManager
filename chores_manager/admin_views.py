@@ -21,13 +21,7 @@ from twilio.rest import Client
 
 # Local app imports
 from .models import Chore, Profile
-
-# Twilio credentials (ensure these are set in your environment or settings)
-from django.conf import settings
-TWILIO_ACCOUNT_SID = settings.TWILIO_ACCOUNT_SID
-TWILIO_AUTH_TOKEN = settings.TWILIO_AUTH_TOKEN
-TWILIO_PHONE_NUMBER = "+18788797709"
-
+from .utils import send_sms
 
 
 DAYS_OF_WEEK = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
@@ -61,22 +55,6 @@ def admin_panel(request):
     }
 
     return render(request, 'admin.html', context)
-
-def send_sms(phone_number, message):
-    """
-    Send an SMS message using Twilio.
-    """
-    client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
-
-    try:
-        message = client.messages.create(
-            body=message,               # Message content
-            from_=TWILIO_PHONE_NUMBER,  # Your Twilio number
-            to=phone_number             # Recipient's phone number
-        )
-        print(f"Message SID: {message.sid}")
-    except Exception as e:
-        print(f"Error sending SMS message: {e}")
 
 @csrf_exempt
 @staff_member_required
