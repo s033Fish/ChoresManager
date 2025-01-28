@@ -3,7 +3,7 @@ from datetime import date, datetime, timedelta
 from twilio.rest import Client
 from dotenv import load_dotenv
 from pathlib import Path
-import os
+import os, pytz
 
 # Load environment variables
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -47,17 +47,23 @@ def get_user_chores():
     Fetch chores grouped by user for the current day and the upcoming meal.
     Returns a dictionary mapping user information to their uncompleted chores.
     """
-    # Determine today's date and current time
+    # Determine today's date 
     today = date.today()
-    now = datetime.now()
 
-    # Determine the upcoming meal based on the current time
-    if now.hour < 12:
+    # Get current time in ET
+    now_utc = datetime.now(pytz.utc)
+    eastern_time = pytz.timezone('US/Eastern')
+    now_et = now_utc.astimezone(eastern_time)
+
+    # Determine today's date and the upcoming meal based on ET time
+    today = now_et.date()
+    if now_et.hour < 12:
         meal_time = "breakfast"
-    elif now.hour < 17:
+    elif now_et.hour < 17:
         meal_time = "lunch"
     else:
         meal_time = "dinner"
+
 
     # Connect to the SQLite database
     conn = sqlite3.connect(DB_PATH)
