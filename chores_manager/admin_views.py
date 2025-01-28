@@ -209,7 +209,7 @@ def assign_chores(request):
             # Fetch unassigned chores for the week
             unassigned_chores = Chore.objects.filter(
                 user__isnull=True,
-               # date__range=(start_of_week, end_of_week) #not currently used...query selects all dates
+                date__range=(start_of_week, end_of_week) 
             )
 
             print("Unassigned chores count:", unassigned_chores.count())
