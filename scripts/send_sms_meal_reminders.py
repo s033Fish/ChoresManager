@@ -6,7 +6,7 @@ from pathlib import Path
 import os
 
 # Load environment variables
-BASE_DIR = Path(__file__).resolve().parent
+BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(BASE_DIR / ".env")
 
 # Twilio credentials
