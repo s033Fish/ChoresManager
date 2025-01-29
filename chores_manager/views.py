@@ -13,6 +13,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import user_passes_test
 from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponse
+from django.utils import timezone
 
 # Twilio imports
 from twilio.twiml.messaging_response import MessagingResponse
@@ -150,9 +151,11 @@ def process_message(from_number, message_body):
         profile = Profile.objects.get(phone_number=stripped_from_number)
         user = profile.user
 
+        today = timezone.localdate()
+
         # Fetch the most recent past chore assigned to the user and incomplete
         recent_chore = (
-            Chore.objects.filter(user=user, completed=False, date__lte=date.today())
+            Chore.objects.filter(user=user, completed=False, date__lte=date.today)
             .order_by("-date")
             .first()
         )
