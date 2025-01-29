@@ -155,7 +155,7 @@ def process_message(from_number, message_body):
 
         # Fetch the most recent past chore assigned to the user and incomplete
         recent_chore = (
-            Chore.objects.filter(user=user, completed=False, date__lte=date.today)
+            Chore.objects.filter(user=user, completed=False, date__lte=today)
             .order_by("-date")
             .first()
         )
