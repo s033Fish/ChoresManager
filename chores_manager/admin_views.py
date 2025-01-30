@@ -89,7 +89,7 @@ def send_sms_reminders(request):
                     user_key = (user.id, user.first_name, user.last_name, profile.phone_number)
                     if user_key not in user_chores:
                         user_chores[user_key] = []
-                    user_chores[user_key].append((chore.day_of_week, chore.meal_time, chore.date))
+                    user_chores[user_key].append((chore.id, chore.day_of_week, chore.meal_time, chore.date))
 
             if not user_chores:
                 return JsonResponse({'message': 'No uncompleted chores found for this week.'}, status=404)
@@ -99,14 +99,14 @@ def send_sms_reminders(request):
             for (user_id, first_name, last_name, phone_number), chores in user_chores.items():
                 # Build the list of chores
                 chore_list = "\n".join(
-                    [f"- {day_of_week} ({chore_date}) - {meal_time}" for day_of_week, meal_time, chore_date in chores]
+                    [f"- ID: {chore_id} {day_of_week} ({chore_date}) - {meal_time}" for chore_id, day_of_week, meal_time, chore_date in chores]
                 )
 
                 # Compose the SMS message
                 message = (
                     f"Hi {first_name}, here are your pending chores for this week:\n"
                     f"{chore_list}\n"
-                    "Please complete them as soon as possible. Thank you!"
+                    "Please complete them as soon as possible. Reply with the CHORE ID to mark it complete. Thank you!"
                 )
                 print("message: ", message)
 

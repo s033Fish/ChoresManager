@@ -121,7 +121,7 @@ def signup_view(request):
         form = CustomUserCreationForm()
     return render(request, 'signup.html', {'form': form})
 
-"""
+
 def process_message(from_number, message_body):
     try:
         # Assume users reply with the chore ID to mark it as completed
@@ -137,13 +137,11 @@ def process_message(from_number, message_body):
             return "You are not assigned to this chore."
     except (ValueError, Chore.DoesNotExist):
         return "Invalid chore ID. Please check and try again."
-"""
 
+"""
+# When users respond with COMPLETED this logic looks for any chore not completed
+# less than or equal to today's date.
 def process_message(from_number, message_body):
-    """
-    Process incoming messages to complete the most recent past chore
-    assigned to the user and incomplete.
-    """
     try:
         stripped_from_number = from_number.lstrip('+1')
 
@@ -171,7 +169,7 @@ def process_message(from_number, message_body):
         return "No user found for this phone number."
     except Exception as e:
         return f"An error occurred while processing your request: {str(e)}"
-
+"""
 
 @csrf_exempt  # Disable CSRF protection for webhook requests
 def sms_reply_webhook(request):
