@@ -43,7 +43,7 @@ def admin_panel(request):
     end_of_week = start_of_week + timedelta(days=6)  # Sunday of this week
 
     # Fetch chores for the current week
-    chores = Chore.objects.filter(date__range=(start_of_week, end_of_week)).select_related('user').order_by('date', 'meal_time')
+    chores = Chore.objects.filter(date__range=(start_of_week, end_of_week)).select_related('user').order_by('date', '-meal_time')
 
     # Check if the user is staff
     is_staff = user.is_staff
