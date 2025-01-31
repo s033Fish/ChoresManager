@@ -64,14 +64,13 @@ def get_user_chores():
     else:
         meal_time = "dinner"
 
-
     # Connect to the SQLite database
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
 
     # Query for uncompleted chores for the upcoming meal
     query = """
-        SELECT u.id AS user_id, u.first_name, u.last_name, p.phone_number, 
+        SELECT c.id AS chore_id, u.id AS user_id, u.first_name, u.last_name, p.phone_number, 
                c.day_of_week, c.meal_time, c.date
         FROM chores_manager_chore AS c
         LEFT JOIN auth_user AS u ON c.user_id = u.id
@@ -89,11 +88,11 @@ def get_user_chores():
 
     # Group chores by user
     user_chores = {}
-    for user_id, first_name, last_name, phone_number, day_of_week, meal_time, chore_date in rows:
+    for chore_id, user_id, first_name, last_name, phone_number, day_of_week, meal_time, chore_date in rows:
         user_key = (user_id, first_name, last_name, phone_number)
         if user_key not in user_chores:
             user_chores[user_key] = []
-        user_chores[user_key].append((day_of_week, meal_time, chore_date))
+        user_chores[user_key].append((chore_id, day_of_week, meal_time, chore_date))
 
     return user_chores
 
@@ -117,14 +116,17 @@ def send_reminders():
 
     # Send SMS reminders
     for (user_id, first_name, last_name, phone_number), chores in user_chores.items():
-        # Build the list of chores
-        chore_list = "\n".join([f"- {day_of_week} ({chore_date}) - {meal_time}" for day_of_week, meal_time, chore_date in chores])
+        # Build the list of chores including chore ID
+        chore_list = "\n".join(
+            [f"- ID: {chore_id}, {day_of_week} ({chore_date}) - {meal_time}" 
+             for chore_id, day_of_week, meal_time, chore_date in chores]
+        )
 
         # Compose the SMS message
         message = (
             f"Hi {first_name}, here are your pending chores for the upcoming meal:\n"
             f"{chore_list}\n"
-            "Please complete them as soon as possible. Thank you!"
+            "Please complete them as soon as possible. Use the chore ID to mark them as done. Thank you!"
         )
         send_sms(phone_number, message)
         users_contacted.append(f"{first_name} {last_name} ({phone_number})")
