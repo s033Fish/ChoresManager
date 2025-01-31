@@ -128,8 +128,10 @@ def process_message(from_number, message_body):
         chore_id = int(message_body.strip())
         chore = Chore.objects.get(id=chore_id)
 
+        stripped_from_number = from_number.lstrip('+1')
+
         # Verify if the chore belongs to the user
-        if chore.user.profile.phone_number == from_number:
+        if chore.user.profile.phone_number == stripped_from_number:
             chore.completed = True
             chore.save()
             return f"Chore {chore_id} marked as completed!"
